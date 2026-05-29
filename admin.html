@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — BUBi & COJi</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ── ADMIN SPECIFIC ── */
+body { background: #0f0f0f; }
+
+/* LOGIN */
+#loginScreen {
+  min-height: 100vh; display: flex;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.login-box {
+  background: #1a1a1a; border-radius: 20px;
+  padding: 40px 36px; width: 100%; max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  text-align: center;
+}
+.login-box img { width: 80px; height: 80px; object-fit: contain; border-radius: 12px; margin-bottom: 16px; }
+.login-box h1 { font-family: 'Fredoka', sans-serif; color: var(--gold); font-size: 1.6rem; margin-bottom: 6px; }
+.login-box p { color: rgba(255,255,255,.4); font-size: .85rem; margin-bottom: 26px; }
+.login-fi {
+  width: 100%; padding: 12px 16px;
+  background: #2a2a2a; border: 2px solid #333;
+  border-radius: var(--r-sm); color: white;
+  font-family: 'Nunito', sans-serif; font-size: .95rem;
+  outline: none; margin-bottom: 12px; transition: border .2s;
+}
+.login-fi:focus { border-color: var(--orange); }
+.login-fi::placeholder { color: #666; }
+
+/* DASH */
+#dashScreen { display: none; }
+.admin-nav {
+  background: #111; padding: 18px 5vw;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.admin-nav h1 { font-family: 'Fredoka', sans-serif; color: var(--gold); font-size: 1.35rem; }
+.admin-nav p { color: rgba(255,255,255,.35); font-size: .78rem; margin-top: 2px; }
+.admin-tabs {
+  background: #1a1a1a; padding: 0 5vw;
+  display: flex; border-bottom: 1px solid #2a2a2a;
+}
+.atab {
+  background: none; border: none;
+  font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800;
+  color: rgba(255,255,255,.35); cursor: pointer;
+  padding: 13px 18px; border-bottom: 3px solid transparent;
+  transition: all .2s;
+}
+.atab.active, .atab:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* STATS */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px; padding: 20px 5vw; max-width: 1200px; margin: 0 auto;
+}
+.stat { background: #1a1a1a; border-radius: var(--r); padding: 20px; }
+.stat-l { font-size: .72rem; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: .5px; }
+.stat-v { font-size: 2rem; font-weight: 800; color: white; margin-top: 4px; }
+.stat-v.fire { color: var(--fire); }
+
+/* ORDERS WRAP */
+.orders-wrap { max-width: 1200px; margin: 0 auto; padding: 0 5vw 60px; }
+.filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; padding-top: 20px; }
+.fbtn {
+  padding: 7px 16px; border-radius: 20px;
+  border: 2px solid #2a2a2a; background: #1a1a1a;
+  font-family: 'Nunito', sans-serif; font-size: .8rem; font-weight: 800;
+  cursor: pointer; transition: all .2s; color: #888;
+}
+.fbtn.active, .fbtn:hover { background: var(--dark); color: white; border-color: var(--fire); }
+
+/* ORDER CARDS */
+.oc {
+  background: #1a1a1a; border-radius: var(--r);
+  padding: 20px; margin-bottom: 12px;
+  border-left: 4px solid #333; transition: all .2s;
+}
+.oc:hover { background: #1f1f1f; }
+.oc.new        { border-left-color: var(--fire); }
+.oc.processing { border-left-color: var(--blue); }
+.oc.done       { border-left-color: var(--green); }
+.oc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.oc-id { font-size: .7rem; font-weight: 800; color: #555; letter-spacing: .5px; }
+.oc-product { font-size: .95rem; font-weight: 800; color: white; margin-top: 3px; }
+.oc-date { font-size: .72rem; color: #555; text-align: right; }
+.sbadge { padding: 4px 12px; border-radius: 20px; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+.sbadge.new        { background: rgba(255,78,0,.15); color: var(--fire); }
+.sbadge.processing { background: rgba(0,136,204,.15); color: #4da6ff; }
+.sbadge.done       { background: rgba(0,184,122,.15); color: var(--green); }
+.oc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+@media (max-width: 560px) { .oc-grid { grid-template-columns: 1fr; } }
+.oc-field label { font-size: .68rem; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: .3px; }
+.oc-field p { font-size: .86rem; color: #ddd; margin-top: 2px; font-weight: 600; }
+.oc-field a { color: var(--orange); text-decoration: none; }
+.oc-field a:hover { text-decoration: underline; }
+.oc-note {
+  background: #111; border-radius: var(--r-sm);
+  padding: 10px 13px; font-size: .82rem; color: #aaa;
+  line-height: 1.55; margin-bottom: 12px;
+  border-left: 3px solid var(--gold);
+}
+.oc-note .download-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--grad); color: white !important;
+  padding: 4px 12px; border-radius: 20px; font-size: .78rem;
+  font-weight: 800; text-decoration: none !important;
+  margin-top: 4px;
+}
+.oc-note .download-link:hover { opacity: .85; }
+.oc-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.abtn { padding: 6px 14px; border-radius: 20px; border: none; font-family: 'Nunito', sans-serif; font-size: .77rem; font-weight: 800; cursor: pointer; transition: all .2s; }
+.abtn-p { background: rgba(0,136,204,.15); color: #4da6ff; }
+.abtn-p:hover { background: #0088cc; color: white; }
+.abtn-d { background: rgba(0,184,122,.15); color: var(--green); }
+.abtn-d:hover { background: var(--green); color: white; }
+.abtn-x { background: rgba(255,78,0,.12); color: var(--fire); }
+.abtn-x:hover { background: var(--fire); color: white; }
+
+/* PRODUCTS MANAGER */
+.pm-wrap { max-width: 1200px; margin: 0 auto; padding: 0 5vw 60px; }
+.pm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; padding-top: 24px; }
+.pm-head h2 { font-family: 'Fredoka', sans-serif; font-size: 1.5rem; color: white; }
+.pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.pm-card {
+  background: #1a1a1a; border-radius: var(--r);
+  padding: 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.pm-name { font-family: 'Fredoka', sans-serif; font-size: 1rem; font-weight: 600; color: white; }
+.pm-price { font-size: 1.05rem; font-weight: 800; color: var(--fire); }
+.pm-actions { display: flex; gap: 7px; margin-top: 4px; }
+.pm-edit { flex: 1; background: #2a2a2a; border: none; border-radius: 20px; padding: 8px; font-family: 'Nunito', sans-serif; font-size: .8rem; font-weight: 800; cursor: pointer; color: #aaa; transition: all .2s; }
+.pm-edit:hover { background: var(--orange); color: white; }
+.pm-del { background: rgba(255,78,0,.12); border: none; border-radius: 20px; padding: 8px 12px; font-family: 'Nunito', sans-serif; font-size: .8rem; font-weight: 800; cursor: pointer; color: var(--fire); transition: all .2s; }
+.pm-del:hover { background: var(--fire); color: white; }
+
+/* PRODUCT FORM MODAL */
+.pf-modal {
+  background: #1a1a1a; border-radius: var(--r);
+  width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  animation: slideUp .3s cubic-bezier(.34,1.56,.64,1);
+}
+.pf-top { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: center; }
+.pf-top h2 { font-family: 'Fredoka', sans-serif; font-size: 1.3rem; color: white; }
+.pf-body { padding: 14px 20px 24px; }
+.pf-body .fi, .pf-body .ft, .pf-body .fs {
+  background: #2a2a2a; border-color: #333; color: white;
+}
+.pf-body .fi:focus, .pf-body .ft:focus { background: #2f2f2f; border-color: var(--orange); }
+.pf-body .fg label { color: #888; }
+.pf-body .upload-zone { background: #111; border-color: #333; }
+.pf-body .upload-zone p { color: #777; }
+.pf-body .upload-zone:hover { border-color: var(--fire); background: #1a1a1a; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1.5px solid #2a2a2a; }
+.toggle-row label { font-size: .83rem; font-weight: 700; color: #888; }
+.toggle { width: 42px; height: 24px; border-radius: 12px; background: #333; border: none; cursor: pointer; position: relative; transition: all .25s; flex-shrink: 0; }
+.toggle.on { background: var(--green); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: left .2s; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.toggle.on::after { left: 21px; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 50px 20px; color: #555; }
+.empty-ico { font-size: 3rem; margin-bottom: 10px; }
+
+/* TOAST */
+.toast { background: #1a1a1a; border: 1px solid #333; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="images/logo.jpg" alt="BUBi & COJi" onerror="this.style.display='none'">
+    <h1>🔐 Admin Panel</h1>
+    <p>BUBi &amp; COJi — Cadouri La Fix</p>
+    <input class="login-fi" id="loginUser" type="text" placeholder="Username" value="bubi" autocomplete="username">
+    <input class="login-fi" id="loginPass" type="password" placeholder="Parolă" autocomplete="current-password">
+    <button class="btn-fire" id="loginBtn" onclick="doLogin()" style="width:100%;padding:13px">Intră</button>
+    <p style="margin-top:14px;font-size:.72rem;color:#444">User: <b style="color:#666">bubi</b> · Parolă: <b style="color:#666">bubi2024</b></p>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashScreen">
+  <div class="admin-nav">
+    <div>
+      <h1>📦 BUBi &amp; COJi Admin</h1>
+      <p id="adminSub">Se încarcă...</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a href="/" class="nav-btn" style="color:rgba(255,255,255,.5)">← Shop</a>
+      <button class="btn-outline-dark" onclick="doLogout()" style="color:rgba(255,255,255,.4);border-color:#333">Ieși</button>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="atab active" id="tab-orders"   onclick="switchTab('orders')">📋 Comenzi</button>
+    <button class="atab"        id="tab-products" onclick="switchTab('products')">🎁 Produse</button>
+  </div>
+
+  <!-- ORDERS TAB -->
+  <div id="tabOrders">
+    <div class="stats" id="statsRow">
+      <div class="stat"><div class="stat-l">Total comenzi</div><div class="stat-v" id="statTotal">—</div></div>
+      <div class="stat"><div class="stat-l">Noi</div><div class="stat-v fire" id="statNew">—</div></div>
+      <div class="stat"><div class="stat-l">Procesare</div><div class="stat-v" id="statProcessing">—</div></div>
+      <div class="stat"><div class="stat-l">Finalizate</div><div class="stat-v" id="statDone">—</div></div>
+    </div>
+    <div class="orders-wrap">
+      <div class="filters">
+        <button class="fbtn active" onclick="filterOrders('all',this)">Toate</button>
+        <button class="fbtn" onclick="filterOrders('new',this)">🆕 Noi</button>
+        <button class="fbtn" onclick="filterOrders('processing',this)">⚙️ Procesare</button>
+        <button class="fbtn" onclick="filterOrders('done',this)">✅ Finalizate</button>
+      </div>
+      <div id="ordersList"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS TAB -->
+  <div id="tabProducts" style="display:none">
+    <div class="pm-wrap">
+      <div class="pm-head">
+        <h2>🎁 Produsele tale</h2>
+        <button class="btn-fire" onclick="openPF(null)" style="padding:10px 20px;font-size:.9rem">+ Adaugă produs</button>
+      </div>
+      <div class="pm-grid" id="pmGrid"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT FORM OVERLAY -->
+<div class="overlay" id="pfOverlay">
+  <div class="pf-modal" id="pfModal"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
