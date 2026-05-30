@@ -1,5 +1,5 @@
 // ── API.JS ─ toate request-urile către backend ────────────────────
-const API = 'http://localhost:3001/api';
+const API = 'https://bubisicoji.onrender.com/api';
 
 // ── AUTH ──────────────────────────────────────────────────────────
 async function apiLogin(user, pass) {
