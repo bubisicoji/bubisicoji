@@ -4,7 +4,8 @@ let produse       = [];
 let curFilter     = 'all';
 let curTab        = 'orders';
 let editingId     = null;
-let prodImgFile   = null;
+let galerieFiles  = [];
+let galerieExistenta = [];
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -196,8 +197,9 @@ function renderPM() {
 }
 
 function openPF(id) {
-  editingId   = id || null;
-  prodImgFile = null;
+  editingId        = id || null;
+  galerieFiles     = [];
+  galerieExistenta = ep && ep.galerie ? [...ep.galerie] : (ep && ep.imagine ? [ep.imagine] : []);
   const ep    = id ? produse.find(p => p.id === id) : null;
 
   document.getElementById('pfModal').innerHTML = `
@@ -207,13 +209,13 @@ function openPF(id) {
     </div>
     <div class="pf-body">
       <div class="fg">
-        <label>Imagine produs</label>
-        <div class="upload-zone ${ep && ep.imagine ? 'done' : ''}" id="pfImgZone" onclick="document.getElementById('pfImgInput').click()">
-          ${ep && ep.imagine
-            ? `<img src="${ep.imagine}" style="max-height:100px;max-width:100%;border-radius:8px;margin-bottom:6px"><p><strong>Click pentru a schimba</strong></p>`
-            : `<div class="ico">🖼️</div><p><strong>Click pentru upload</strong><br>JPG, PNG, WEBP — max 5MB</p>`}
+        <label>Galerie imagini produs (poți selecta mai multe)</label>
+        <div class="upload-zone" id="pfImgZone" onclick="document.getElementById('pfImgInput').click()">
+          <div class="ico">🖼️</div>
+          <p><strong>Click pentru upload</strong><br>Selectează una sau mai multe poze — JPG, PNG, WEBP</p>
         </div>
-        <input type="file" id="pfImgInput" accept="image/*" style="display:none" onchange="handleProdImg(event)">
+        <input type="file" id="pfImgInput" accept="image/*" multiple style="display:none" onchange="handleProdImg(event)">
+        <div id="galeriePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
       </div>
 
       <div class="frow">
@@ -236,15 +238,35 @@ function openPF(id) {
     </div>`;
 
   document.getElementById('pfOverlay').classList.add('open');
+  setTimeout(renderGaleriePreview, 50);
 }
 
 function handleProdImg(e) {
-  const f = e.target.files[0]; if (!f) return;
-  prodImgFile = f;
-  const z = document.getElementById('pfImgZone');
-  z.classList.add('done');
-  const url = URL.createObjectURL(f);
-  z.innerHTML = `<img src="${url}" style="max-height:100px;max-width:100%;border-radius:8px;margin-bottom:6px"><p><strong>${f.name}</strong><br><span style="color:#aaa;font-size:.75rem">Click pentru a schimba</span></p>`;
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  galerieFiles = [...galerieFiles, ...files];
+  renderGaleriePreview();
+}
+
+function renderGaleriePreview() {
+  const preview = document.getElementById('galeriePreview');
+  if (!preview) return;
+  const all = [
+    ...galerieExistenta.map((url, i) => ({ type: 'existing', url, i })),
+    ...galerieFiles.map((f, i) => ({ type: 'new', url: URL.createObjectURL(f), i }))
+  ];
+  if (!all.length) { preview.innerHTML = ''; return; }
+  preview.innerHTML = all.map(item => `
+    <div style="position:relative;display:inline-block">
+      <img src="${item.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #333">
+      <button onclick="removePoza('${item.type}',${item.i})" style="position:absolute;top:-6px;right:-6px;background:var(--fire);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>`).join('');
+}
+
+function removePoza(type, idx) {
+  if (type === 'existing') galerieExistenta.splice(idx, 1);
+  else galerieFiles.splice(idx, 1);
+  renderGaleriePreview();
 }
 
 function togBtn(id) { document.getElementById(id).classList.toggle('on'); }
@@ -271,7 +293,8 @@ async function saveProd() {
   };
 
   try {
-    const res = await apiSaveProdus(data, prodImgFile, editingId);
+    data.galerieExistenta = galerieExistenta;
+    const res = await apiSaveProdus(data, galerieFiles, editingId);
     if (res.ok) {
       await loadProduse(); renderPM();
       closePF();

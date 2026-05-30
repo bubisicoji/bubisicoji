@@ -27,13 +27,24 @@ function renderShop() {
     grid.innerHTML = '<p style="color:var(--mid);grid-column:1/-1;text-align:center">Produsele se pregătesc — reveniți în curând! 🎁</p>';
     return;
   }
-  grid.innerHTML = active.map(p => `
+
+  window._galIdx = {};
+  grid.innerHTML = active.map(p => {
+    const galerie = (p.galerie && p.galerie.length > 0) ? p.galerie : (p.imagine ? [p.imagine] : []);
+    const hasMany = galerie.length > 1;
+    window._galIdx[p.id] = 0;
+    return `
     <div class="card" onclick="openOrder(${p.id})">
-      <div class="card-img">
-        ${p.imagine
-          ? `<img src="${p.imagine}" alt="${p.name}" loading="lazy">`
+      <div class="card-img" id="card-img-${p.id}">
+        ${galerie.length > 0
+          ? `<img src="${galerie[0]}" alt="${p.name}" loading="lazy" id="gal-main-${p.id}">`
           : `<span class="emoji-fallback">${p.emoji || '🎁'}</span>`}
         ${p.badge ? `<div class="card-badge">${p.badge}</div>` : ''}
+        ${hasMany ? `
+          <button class="gal-btn gal-prev" onclick="event.stopPropagation();galNav(${p.id},-1)">&#8249;</button>
+          <button class="gal-btn gal-next" onclick="event.stopPropagation();galNav(${p.id},1)">&#8250;</button>
+          <div class="gal-dots">${galerie.map((_,i)=>`<span class="gal-dot${i===0?' active':''}" id="dot-${p.id}-${i}"></span>`).join('')}</div>
+        ` : ''}
       </div>
       <div class="card-body">
         <div class="card-name">${p.name}</div>
@@ -43,8 +54,31 @@ function renderShop() {
           <button class="add-btn" onclick="event.stopPropagation();openOrder(${p.id})">+</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
+
+function galNav(prodId, dir) {
+  const prod    = produse.find(p => p.id === prodId);
+  if (!prod) return;
+  const galerie = (prod.galerie && prod.galerie.length > 0) ? prod.galerie : (prod.imagine ? [prod.imagine] : []);
+  if (galerie.length <= 1) return;
+
+  const oldIdx = window._galIdx[prodId] || 0;
+  const newIdx = (oldIdx + dir + galerie.length) % galerie.length;
+  window._galIdx[prodId] = newIdx;
+
+  // Update imagine
+  const img = document.getElementById(`gal-main-${prodId}`);
+  if (img) img.src = galerie[newIdx];
+
+  // Update dots
+  galerie.forEach((_, i) => {
+    const dot = document.getElementById(`dot-${prodId}-${i}`);
+    if (dot) dot.classList.toggle('active', i === newIdx);
+  });
+}
+
 
 // ── ORDER MODAL ───────────────────────────────────────────────────
 function openOrder(id) {
@@ -167,8 +201,7 @@ async function submitOrder() {
           <h2>Comandă trimisă!</h2>
           <div class="order-code">${res.id}</div>
           <p>Mulțumim, <strong>${name}</strong>!<br>
-          Te contactăm în maxim 24h pe email la <strong>${email}</strong><br>
-          sau pe WhatsApp/telefon la <strong>0${phone.replace(/^0+/, '')}</strong> pentru confirmare și detalii plată.</p>
+          Te contactăm la <strong>${phone}</strong> sau <strong>${email}</strong> în max 24h.</p>
           <button class="btn-fire" style="margin-top:24px" onclick="closeOverlay('orderOverlay')">Înapoi la produse</button>
         </div>`;
     } else {

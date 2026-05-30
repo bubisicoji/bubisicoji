@@ -1,5 +1,5 @@
 // ── API.JS ─ toate request-urile către backend ────────────────────
-const API = 'https://bubisicoji.onrender.com/api';
+const API = 'http://localhost:3001/api';
 
 // ── AUTH ──────────────────────────────────────────────────────────
 async function apiLogin(user, pass) {
@@ -17,11 +17,13 @@ async function apiGetProduse() {
   return r.json();
 }
 
-async function apiSaveProdus(data, imagineFile, id = null) {
+async function apiSaveProdus(data, galerieFiles, id = null) {
   const token = localStorage.getItem('bc_token');
   const fd = new FormData();
   fd.append('data', JSON.stringify(data));
-  if (imagineFile) fd.append('imagine', imagineFile);
+  if (galerieFiles && galerieFiles.length > 0) {
+    galerieFiles.forEach(f => fd.append('galerie', f));
+  }
 
   const url    = id ? `${API}/produse/${id}` : `${API}/produse`;
   const method = id ? 'PUT' : 'POST';
