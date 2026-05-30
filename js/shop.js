@@ -167,7 +167,8 @@ async function submitOrder() {
           <h2>Comandă trimisă!</h2>
           <div class="order-code">${res.id}</div>
           <p>Mulțumim, <strong>${name}</strong>!<br>
-          Te contactăm la <strong>${phone}</strong> sau <strong>${email}</strong> în max 24h.</p>
+          Te contactăm în maxim 24h pe email la <strong>${email}</strong><br>
+          sau pe WhatsApp/telefon la <strong>0${phone.replace(/^0+/, '')}</strong> pentru confirmare și detalii plată.</p>
           <button class="btn-fire" style="margin-top:24px" onclick="closeOverlay('orderOverlay')">Înapoi la produse</button>
         </div>`;
     } else {
