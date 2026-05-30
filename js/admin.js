@@ -199,8 +199,8 @@ function renderPM() {
 function openPF(id) {
   editingId        = id || null;
   galerieFiles     = [];
+  const ep         = id ? produse.find(p => p.id === id) : null;
   galerieExistenta = ep && ep.galerie ? [...ep.galerie] : (ep && ep.imagine ? [ep.imagine] : []);
-  const ep    = id ? produse.find(p => p.id === id) : null;
 
   document.getElementById('pfModal').innerHTML = `
     <div class="pf-top">
